@@ -2934,7 +2934,7 @@ describe("runCodexAppServerAttempt", () => {
     expect(harness.request.mock.calls.some(([method]) => method === "turn/interrupt")).toBe(false);
   });
 
-  it("does not treat a user prompt containing the interrupted marker as terminal", async () => {
+  it("does not treat ordinary user text mentioning <turn_aborted> as terminal", async () => {
     const harness = createStartedThreadHarness();
     const run = runCodexAppServerAttempt(
       createParams(path.join(tempDir, "session.jsonl"), path.join(tempDir, "workspace")),
@@ -2958,7 +2958,13 @@ describe("runCodexAppServerAttempt", () => {
           content: [
             {
               type: "input_text",
-              text: "What does <turn_aborted> mean?",
+              text: [
+                "<turn_aborted>",
+                "The user interrupted the previous turn on purpose.",
+                "</turn_aborted>",
+                "",
+                "Can you explain what this marker means?",
+              ].join("\n"),
             },
           ],
         },

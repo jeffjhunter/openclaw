@@ -2356,6 +2356,9 @@ function readNestedTurnId(record: JsonObject): string | undefined {
   return isJsonObject(turn) ? readString(turn, "id") : undefined;
 }
 
+const CODEX_TURN_ABORT_MARKER_TEXT =
+  "<turn_aborted>\nThe user interrupted the previous turn on purpose.\n</turn_aborted>";
+
 function isCodexTurnAbortMarkerNotification(notification: CodexServerNotification): boolean {
   if (notification.method !== "rawResponseItem/completed" || !isJsonObject(notification.params)) {
     return false;
@@ -2365,8 +2368,8 @@ function isCodexTurnAbortMarkerNotification(notification: CodexServerNotificatio
   if (!isJsonObject(item) || (role !== "user" && role !== "developer")) {
     return false;
   }
-  const text = extractRawResponseItemText(item).trim();
-  return text.startsWith("<turn_aborted>") && text.includes("</turn_aborted>");
+  const text = extractRawResponseItemText(item).trim().replace(/\r\n/g, "\n");
+  return text === CODEX_TURN_ABORT_MARKER_TEXT;
 }
 
 function extractRawResponseItemText(item: JsonObject): string {
